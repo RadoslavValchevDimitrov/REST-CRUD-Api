@@ -2,15 +2,28 @@ package com.love2code.springboot.cruddemo.rest;
 
 import com.love2code.springboot.cruddemo.dao.service.EmployeeServiceInterface;
 import com.love2code.springboot.cruddemo.entity.Employee;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api")
 public class EmployeeRestController {
     private EmployeeServiceInterface employeeService;
+
+    private List<Employee> employeeList;
+
+    @PostConstruct
+    public void loadData(){
+
+        employeeList = new ArrayList<>();
+        employeeList = employeeService.findAll();
+    }
+
+
     
 @Autowired
     public EmployeeRestController(EmployeeServiceInterface employeeService){
@@ -25,11 +38,12 @@ public class EmployeeRestController {
     //add mapping for GET /employees/{employeeId}
     @GetMapping("/employees/{employeeId}")
     public Employee getSingleEmployee(@PathVariable int employeeId){
-    Employee theEmployee = employeeService.findEmployeeById(employeeId);
-       if(theEmployee == null){
-           throw new RuntimeException("Employee Id not found! " + employeeId);
+   // List<Employee> employeeList = employeeService.findAll();
+    //Employee theEmployee = employeeService.findEmployeeById(employeeId);
+       if(employeeId>=employeeList.size()||employeeId<0 ){
+           throw new EmployeeNotFoundException("Employee Id not found! " + employeeId);
        }
-       return theEmployee;
+       return employeeList.get(employeeId);
     }
 
     // add mapping for POST /employees - add new employee
@@ -66,4 +80,5 @@ public class EmployeeRestController {
         employeeService.deleteEmployeeById(employeeId);
         return "Deleted employee id -  " + employeeId;
     }
+
     }
